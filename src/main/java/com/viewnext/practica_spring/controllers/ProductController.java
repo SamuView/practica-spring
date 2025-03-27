@@ -3,6 +3,7 @@ package com.viewnext.practica_spring.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
-import com.viewnext.practica_spring.ProductNotFoundException;
 import com.viewnext.practica_spring.models.Product;
 import com.viewnext.practica_spring.repos.ProductRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 public class ProductController {
@@ -33,17 +35,20 @@ public class ProductController {
 	}
 	
 	@GetMapping("/products/{id}")
-	public Product getProduct(@PathVariable long id) {
+	public ResponseEntity<Product> getProduct(@PathVariable long id) {
 	
-		Product product = productRepo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
-	
-		return product;
+		Product product = productRepo.findById(id).get();
+		
+		if (product != null) {
+	        return ResponseEntity.ok(product);
+	    } else {
+	        return ResponseEntity.notFound().build();
+	    }
 	}
 	
 	@PostMapping("/products/save")
-	public String saveProducts(Product product){
-		productRepo.save(product);
-		return "Product saved.";
+	public ResponseEntity<Product> saveProducts(@Valid @RequestBody Product product){
+		return ResponseEntity.ok(productRepo.save(product));
 	}
 	
 	@PutMapping("/products/update/{id}")
